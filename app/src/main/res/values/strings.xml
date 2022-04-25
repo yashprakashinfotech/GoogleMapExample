@@ -6,4 +6,8 @@
     <string name="must_allow_location">Location permission need to accessing current location</string>
     <string name="cancel">Cancel</string>
     <string name="open_setting">OPEN SETTING</string>
+    <string name="normal">Normal</string>
+    <string name="satellite">Satellite</string>
+    <string name="hybrid">Hybrid</string>
+    <string name="terrain">Terrain</string>
 </resources>
