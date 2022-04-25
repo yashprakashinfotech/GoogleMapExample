@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">GoogleMapExample</string>
+    <string name="title_activity_maps">MapsActivity</string>
+
+    <string name="permission">Permission!</string>
+    <string name="must_allow_location">Location permission need to accessing current location</string>
+    <string name="cancel">Cancel</string>
+    <string name="open_setting">OPEN SETTING</string>
+</resources>
