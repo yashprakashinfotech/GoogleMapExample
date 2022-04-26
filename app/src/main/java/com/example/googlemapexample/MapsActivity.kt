@@ -1,27 +1,34 @@
 package com.example.googlemapexample
 
 import android.Manifest
+//import android.R
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Location
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.Settings
+import android.view.View
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Transformations.map
+import com.directions.route.*
+import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
-
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.GoogleMap.OnMapClickListener
+import com.google.android.gms.maps.GoogleMap.OnMyLocationChangeListener
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
-import java.lang.Exception
+import com.google.android.gms.maps.model.*
+import com.google.android.material.snackbar.Snackbar
+import kotlin.coroutines.coroutineContext
+
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -44,6 +51,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     // when device location change that notify us
     private lateinit var locationCallback: LocationCallback
 
+    // Route draw
+
+    private var myLocation : Location? = null
+    private var clickLocation : LatLng? = null
+    private var start : LatLng? = null
+    private var end : LatLng? = null
+
+    private var location1 : LatLng? = null
+    //polyline object
+    private var polyline: List<Polyline>? = null
+//    private var polyline: List<Polyline>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -93,6 +111,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             map.mapType = GoogleMap.MAP_TYPE_NORMAL
         }
 
+
     }
 
     private fun initView(){
@@ -122,22 +141,164 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         map = googleMap
 
         checkPermissionsAndCurrentLocationAccess()
-        getLocationUpdates()
-        startLocationUpdates()
+        //temporary comment
+//        getLocationUpdates()
+//        startLocationUpdates()
 
-        val location1 = LatLng(23.02,72.57)
+        location1 = LatLng(23.02,72.57)
         map.addMarker(
-            MarkerOptions().position(location1).title("Ahmedabad").icon(
+            MarkerOptions().position(location1!!).title("Ahmedabad").icon(
             BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)))
-        map.animateCamera(CameraUpdateFactory.newLatLngZoom(location1,10f))
+        map.animateCamera(CameraUpdateFactory.newLatLngZoom(location1!!,10f))
     }
 
+    //Route draw action
+
+    //to get user location
+    private fun getMyLocation() {
+//        map.setMyLocationEnabled(true)
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return
+        }
+        map.isMyLocationEnabled = true
+        map.setOnMyLocationChangeListener(OnMyLocationChangeListener { location ->
+//        map.setOnMyLocationChangeListener(OnMyLocationChangeListener { location ->
+            myLocation = location
+            val ltlng = LatLng(location.latitude, location.longitude)
+            val cameraUpdate = CameraUpdateFactory.newLatLngZoom(
+                ltlng, 15f
+            )
+            map.animateCamera(cameraUpdate)
+        })
+
+        //get destination location when user click on map
+        map.setOnMapClickListener(OnMapClickListener { latLng ->
+            end = latLng
+            map.clear()
+            start = LatLng(myLocation!!.latitude, myLocation!!.longitude)
+//            map.addMarker(MarkerOptions().position(clickLocation!!).title("click").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)))
+            //start route finding
+            Findroutes(start, end)
+        })
+    }
+
+    // function to find Routes.
+//    fun Findroutes(Start: LatLng?, End: LatLng?) {
+//        if (Start == null || End == null) {
+//            Toast.makeText(this, "Unable to get location", Toast.LENGTH_LONG).show()
+//        } else {
+//            val routing: Routing = Builder
+//                .travelMode(AbstractRouting.TravelMode.DRIVING)
+//                .withListener(this)
+//                .alternativeRoutes(true)
+//                .waypoints(Start, End)
+//                .key("AIzaSyCGXGYqt3XA5VYxuvTaPEgy7gpX_LOQkuA") //also define your api key here.
+//                .build()
+//            routing.execute()
+//        }
+//    }
+
+    private fun Findroutes(Start: LatLng?, End: LatLng?) {
+        if (Start == null || End == null) {
+            Toast.makeText(this, "Unable to get location", Toast.LENGTH_LONG).show()
+        } else {
+            val routing = Routing.Builder()
+                .travelMode(AbstractRouting.TravelMode.DRIVING)
+                .waypoints(location1)
+//                .withListener(this.map)
+                .alternativeRoutes(true)
+                .waypoints(Start, End)
+                .key("AIzaSyCGXGYqt3XA5VYxuvTaPEgy7gpX_LOQkuA") //also define your api key here.
+//                .key("AIzaSyD4uStbluZBnwKADWRtCPalZoddDXdNQbs") //also define your api key here.
+                .build()
+            routing.execute()
+        }
+    }
+
+    //Routing call back functions.
+    @Override
+    fun onRoutingFailure(e: RouteException) {
+        val parentLayout: View = findViewById(android.R.id.content)
+        val snackbar: Snackbar = Snackbar.make(parentLayout, e.toString(), Snackbar.LENGTH_LONG)
+        snackbar.show()
+//        Findroutes(start,end);
+    }
+
+    @Override
+    fun onRoutingStart() {
+        Toast.makeText(this, "Finding Route...", Toast.LENGTH_LONG).show()
+    }
+
+    //If Route finding success..
+    @Override
+//    fun onRoutingSuccess(route: ArrayList<Route>, shortestRouteIndex: Int) {
+//        val center = CameraUpdateFactory.newLatLng(start!!)
+//        val zoom = CameraUpdateFactory.zoomTo(16f)
+//        if (polyline != null) {
+//            polyline.clear()
+//        }
+//        val polyOptions = PolylineOptions()
+//        var polylineStartLatLng: LatLng? = null
+//        var polylineEndLatLng: LatLng? = null
+//        polyline = ArrayList()
+//        //add route(s) to the map using polyline
+//        for (i in 0 until route.size) {
+//            if (i == shortestRouteIndex) {
+//                polyOptions.color(resources.getColor(R.color.purple_700))
+//                polyOptions.width(7f)
+//                polyOptions.addAll(route[shortestRouteIndex].points)
+//                val polyline: Polyline = map.addPolyline(polyOptions)
+//                polylineStartLatLng = polyline.points[0]
+//                val k = polyline.points.size
+//                polylineEndLatLng = polyline.points[k - 1]
+//                this.polyline.add(polyline)
+//            } else {
+//            }
+//        }
+//
+//        //Add Marker on route starting position
+//        val startMarker = MarkerOptions()
+//        startMarker.position(polylineStartLatLng!!)
+//        startMarker.title("My Location")
+//        map.addMarker(startMarker)
+//
+//        //Add Marker on route ending position
+//        val endMarker = MarkerOptions()
+//        endMarker.position(polylineEndLatLng!!)
+//        endMarker.title("Destination")
+//        map.addMarker(endMarker)
+//    }
+
+    fun onRoutingCancelled() {
+        Findroutes(start, end)
+    }
+
+    fun onConnectionFailed(connectionResult: ConnectionResult) {
+        Findroutes(start, end)
+    }
+
+    // location permission
     private fun checkPermissionsAndCurrentLocationAccess() {
         val permissionGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
 
         if (permissionGranted) {
             // Permission granted
-            map.isMyLocationEnabled = true
+//            map.isMyLocationEnabled = true
+            getMyLocation()
         } else {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
                 // Location Permission Denied by user
