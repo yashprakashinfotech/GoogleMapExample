@@ -9,6 +9,7 @@ import android.location.Location
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.Toast
@@ -259,12 +260,13 @@ class MapsActivity : FragmentActivity(), OnMapReadyCallback, GoogleApiClient.OnC
     override fun onRoutingFailure(e: RouteException) {
         val parentLayout: View = findViewById(android.R.id.content)
         val snackbar: Snackbar = Snackbar.make(parentLayout, e.toString(), Snackbar.LENGTH_LONG)
+        Log.d("Boss","$snackbar")
         snackbar.show()
 //        Findroutes(start,end);
     }
 
     override fun onRoutingStart() {
-        Toast.makeText(this, "Finding Route...", Toast.LENGTH_LONG).show()
+        Toast.makeText(this, "Finding Route...", Toast.LENGTH_SHORT).show()
     }
 
     //If Route finding success..
