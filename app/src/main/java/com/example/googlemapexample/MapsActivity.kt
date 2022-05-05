@@ -5,6 +5,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.location.Location
 import android.net.Uri
 import android.os.Bundle
@@ -200,6 +201,15 @@ class MapsActivity : FragmentActivity(), OnMapReadyCallback, GoogleApiClient.OnC
 
             start = LatLng(myLocation!!.latitude, myLocation!!.longitude)
 
+            // line draw
+            lineOption!!.add(start)
+            lineOption!!.add(end)
+//            lineOption.addAll()
+            lineOption!!.width(12F)
+            lineOption!!.color(Color.BLUE)
+            lineOption!!.geodesic(true)
+            map.addPolyline(lineOption!!)
+
 //            val endLatLag = LatLng(latLng.latitude,latLng.longitude)
 
 //            map.setOnMapClickListener {
@@ -249,10 +259,10 @@ class MapsActivity : FragmentActivity(), OnMapReadyCallback, GoogleApiClient.OnC
 //            lineOption!!.add(end)
 //            lineOption!!.width(12F)
 //            lineOption!!.color(Color.BLUE)
-////            lineOption!!.geodesic(true)
-//
-////            map.clear()
+//            lineOption!!.geodesic(true)
 //            map.addPolyline(lineOption!!)
+////            map.clear()
+
         }
     }
 
