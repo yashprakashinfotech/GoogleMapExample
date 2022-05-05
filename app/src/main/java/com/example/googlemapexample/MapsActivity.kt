@@ -201,14 +201,14 @@ class MapsActivity : FragmentActivity(), OnMapReadyCallback, GoogleApiClient.OnC
 
             start = LatLng(myLocation!!.latitude, myLocation!!.longitude)
 
-            // line draw
-            lineOption!!.add(start)
-            lineOption!!.add(end)
-//            lineOption.addAll()
-            lineOption!!.width(12F)
-            lineOption!!.color(Color.BLUE)
-            lineOption!!.geodesic(true)
-            map.addPolyline(lineOption!!)
+            // line draw manually
+//            lineOption!!.add(start)
+//            lineOption!!.add(end)
+////            lineOption.addAll()
+//            lineOption!!.width(12F)
+//            lineOption!!.color(Color.BLUE)
+//            lineOption!!.geodesic(true)
+//            map.addPolyline(lineOption!!)
 
 //            val endLatLag = LatLng(latLng.latitude,latLng.longitude)
 
